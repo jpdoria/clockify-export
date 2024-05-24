@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"text/tabwriter"
+	"time"
 
 	"github.com/jpdoria/clockify-export/model"
 )
@@ -26,8 +27,8 @@ var (
 	clockifyApiKey = os.Getenv("CLOCKIFY_API_KEY")
 	hourlyRateUsd  = os.Getenv("HOURLY_RATE_USD")
 	payload        = &model.SummaryReport{
-		DateRangeStart: "2024-05-01T00:00:00.000Z",
-		DateRangeEnd:   "2024-05-30T23:59:59.999Z",
+		DateRangeStart: "1970-01-01T00:00:00.000Z",
+		DateRangeEnd:   "1970-01-31T23:59:59.999Z",
 		SortOrder:      "ASCENDING",
 		ExportType:     "JSON",
 		AmountShown:    "HIDE_AMOUNT",
@@ -53,6 +54,20 @@ func init() {
 		fmt.Println("HOURLY_RATE_USD is not set")
 		os.Exit(1)
 	}
+
+	// Set the date range to the current month.
+	now := time.Now()
+	currentYear, currentMonth, _ := now.Date()
+	currentLocation := now.Location()
+	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
+	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
+	lastOfMonth = lastOfMonth.Add(time.Hour * 23)
+	lastOfMonth = lastOfMonth.Add(time.Minute * 59)
+	lastOfMonth = lastOfMonth.Add(time.Second * 59)
+	lastOfMonth = lastOfMonth.Add(time.Millisecond * 999)
+	layout := "2006-01-02T15:04:05.999Z"
+	payload.DateRangeStart = firstOfMonth.Format(layout)
+	payload.DateRangeEnd = lastOfMonth.Format(layout)
 }
 
 // callSummaryReportAPI calls the summary report API of Clockify.

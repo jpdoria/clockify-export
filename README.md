@@ -4,12 +4,14 @@ This is a simple tool to get the time entries from Clockify, do a USD to PHP con
 
 # Usage
 
-Run these commands in the terminal:
+1. Download the binary from the release page.
+1. Set the environment variables `CLOCKIFY_API_KEY` and `HOURLY_RATE_USD`.
+1. Execute the binary.
 
 ```bash
 export CLOCKIFY_API_KEY="foo...bar"
 export HOURLY_RATE_USD="10"
-./clockify-export-arm64
+./clockify-export-arm64-v1.0.0
 ```
 
 # Sample Output

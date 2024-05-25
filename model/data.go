@@ -55,3 +55,21 @@ type GroupOne struct {
 	Duration int    `json:"duration"`
 	Name     string `json:"name"`
 }
+
+// Invoice struct to hold the invoice details.
+type Invoice struct {
+	HourlyRate  float64
+	SubTotal    float64
+	PayoneerFee float64
+	GrandTotal  float64
+	WorkLog     []WorkLog
+}
+
+// WorkLog struct to hold the work log.
+type WorkLog struct {
+	Id          int
+	Date        string
+	Description string
+	Hours       string
+	Amount      string
+}

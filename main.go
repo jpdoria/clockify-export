@@ -9,6 +9,7 @@ import (
 func main() {
 	userId, workspaceId := handler.ClockifyGetWorkspace()
 	handler.ClockifyGetWorkHoursGroupByDate(userId, workspaceId)
-	decimalHours := handler.ClockifyGetWorkHoursGroupByProject(userId, workspaceId)
-	fmt.Printf("Total Earnings: $%.2f (₱%.2f)\n", handler.CalculateEarnings(decimalHours), handler.GetExchangeRates(handler.CalculateEarnings(decimalHours)))
+	invoice := handler.ClockifyGetWorkHoursGroupByProject(userId, workspaceId)
+	fmt.Printf("Total Earnings: $%.2f (₱%.2f)\n", invoice.SubTotal, handler.GetExchangeRates(invoice.SubTotal))
+	handler.CreateSpreadsheet(invoice)
 }

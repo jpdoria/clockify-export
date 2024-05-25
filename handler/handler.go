@@ -41,6 +41,13 @@ var (
 			Status:   "ALL",
 		},
 	}
+	invoice = &model.Invoice{
+		HourlyRate:  1.00,
+		SubTotal:    1.00,
+		PayoneerFee: 0.031,
+		GrandTotal:  1.00,
+		WorkLog:     []model.WorkLog{},
+	}
 )
 
 // Check if the required environment variables are set.
@@ -125,6 +132,7 @@ func CalculateEarnings(hours float64) float64 {
 		os.Exit(1)
 	}
 
+	invoice.HourlyRate = hr
 	return hours * hr
 }
 
@@ -155,18 +163,26 @@ func ClockifyGetWorkHoursGroupByDate(userId, workspaceId string) {
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
 	day := 0
+
 	fmt.Println("Work Log:")
 	fmt.Fprintln(w, "ID\tDATE\tHOURS\tEARNINGS")
 	for _, groupOne := range outputSummary.GroupOne {
 		day += 1
 		msg := fmt.Sprintf("%v\t%v\t%v (%.2f)\t$%.2f", day, groupOne.Name, convertTimetoHHMMSS(groupOne.Duration), convertTimeToDecimal(groupOne.Duration), CalculateEarnings(convertTimeToDecimal(groupOne.Duration)))
 		fmt.Fprintln(w, msg)
+		invoice.WorkLog = append(invoice.WorkLog, model.WorkLog{
+			Id:          day,
+			Date:        groupOne.Name,
+			Description: "Independent Contractor Services",
+			Hours:       fmt.Sprintf("%.2f", convertTimeToDecimal(groupOne.Duration)),
+			Amount:      fmt.Sprintf("$%.2f", CalculateEarnings(convertTimeToDecimal(groupOne.Duration))),
+		})
 	}
 	w.Flush()
 }
 
 // ClockifyGetWorkHoursGroupByProject fetches the work hours of the user grouped by project.
-func ClockifyGetWorkHoursGroupByProject(userId, workspaceId string) float64 {
+func ClockifyGetWorkHoursGroupByProject(userId, workspaceId string) *model.Invoice {
 	payload.SummaryFilter.Groups[0] = "PROJECT"
 	payload.Users.Ids[0] = userId
 	payloadBuffer := new(bytes.Buffer)
@@ -177,7 +193,11 @@ func ClockifyGetWorkHoursGroupByProject(userId, workspaceId string) float64 {
 	json.Unmarshal(res, &outputSummary)
 
 	fmt.Printf("Total Hours: %v (%.2f)\n", convertTimetoHHMMSS(outputSummary.Total[0].TotalTime), convertTimeToDecimal(outputSummary.Total[0].TotalTime))
-	return convertTimeToDecimal(outputSummary.Total[0].TotalTime)
+	invoice.SubTotal = CalculateEarnings(convertTimeToDecimal(outputSummary.Total[0].TotalTime))
+	invoice.PayoneerFee = invoice.SubTotal * 0.031
+	invoice.GrandTotal = invoice.SubTotal + invoice.PayoneerFee
+
+	return invoice
 }
 
 // clockifyGetWorkspace fetches the default workspace and user id of the user.

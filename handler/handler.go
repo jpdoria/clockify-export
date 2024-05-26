@@ -11,6 +11,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jpdoria/clockify-export/model"
 )
 
@@ -42,6 +43,8 @@ var (
 		},
 	}
 	invoice = &model.Invoice{
+		Date:        time.Now().Format("2006-01-02"),
+		Id:          uuid.NewString(),
 		HourlyRate:  1.00,
 		SubTotal:    1.00,
 		PayoneerFee: 0.031,

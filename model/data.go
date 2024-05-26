@@ -58,6 +58,8 @@ type GroupOne struct {
 
 // Invoice struct to hold the invoice details.
 type Invoice struct {
+	Date        string
+	Id          string
 	HourlyRate  float64
 	SubTotal    float64
 	PayoneerFee float64

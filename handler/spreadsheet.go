@@ -19,9 +19,9 @@ func CreateSpreadsheet(invoice *model.Invoice) {
 
 	// Set value of a cell.
 	f.SetCellValue("Sheet1", "D1", "Date:")
-	f.SetCellValue("Sheet1", "E1", len(invoice.WorkLog)-1)
-	f.SetCellValue("Sheet1", "D2", "Invoice No.:")
-	f.SetCellValue("Sheet1", "E2", "1")
+	f.SetCellValue("Sheet1", "E1", invoice.Date)
+	f.SetCellValue("Sheet1", "D2", "Invoice ID:")
+	f.SetCellValue("Sheet1", "E2", invoice.Id)
 	f.SetCellValue("Sheet1", "A4", "From:")
 	f.SetCellValue("Sheet1", "A5", "Foo Bar\nDeveloper")
 	f.SetCellValue("Sheet1", "A7", "To:")
@@ -53,11 +53,10 @@ func CreateSpreadsheet(invoice *model.Invoice) {
 	f.SetCellValue("Sheet1", "E35", fmt.Sprintf("$%.2f", invoice.GrandTotal))
 
 	// Save spreadsheet by the given path.
-	err := os.Mkdir("out", 0755)
-	if err != nil {
-		fmt.Printf("Directory already exists: %v\n", err)
-	}
-	if err := f.SaveAs("out/invoice.xlsx"); err != nil {
+	os.Mkdir("out", 0755)
+	invoiceFileName := fmt.Sprintf("out/invoice-%s.xlsx", invoice.Date)
+	if err := f.SaveAs(invoiceFileName); err != nil {
 		fmt.Println(err)
 	}
+	fmt.Printf("Successfully created an invoice: out/invoice-%s.xlsx", invoice.Date)
 }

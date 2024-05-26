@@ -1,6 +1,6 @@
 .PHONY: default
 
 default:
-	rm -fv build/clockify-export-arm64*
-	GOOS=darwin GOARCH=arm64 go build -o build/clockify-export-arm64-v1.0.1 main.go
-	cd build && zip clockify-export-arm64-v1.0.1.zip clockify-export-arm64-v1.0.1
+	rm -fv build/clockify-export-*
+	GOOS=darwin GOARCH=arm64 go build -o build/clockify-export-arm64-0.3.0 main.go
+	GOOS=darwin GOARCH=amd64 go build -o build/clockify-export-amd64-0.3.0 main.go

@@ -11,7 +11,7 @@ This is a simple tool to get the time entries from Clockify, do a USD to PHP con
 ```bash
 export CLOCKIFY_API_KEY="foo...bar"
 export HOURLY_RATE_USD="10"
-./clockify-export-arm64-v1.0.0
+./clockify-export-arm64-0.3.0
 ```
 
 # Sample Output
@@ -45,4 +45,4 @@ Total Earnings: $170.00 (P9890.60)
 
 # TODO
 
-- Save the time entries to spreadsheet for invoicing.
+- Prettier output. Export as PDF, instead of spreadsheet.

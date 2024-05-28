@@ -45,12 +45,12 @@ func CreateSpreadsheet(invoice *model.Invoice) {
 	}
 
 	// Add the subtotal, Payoneer fee, and grand total at the bottom.
-	f.SetCellValue("Sheet1", "D33", "Subtotal")
-	f.SetCellValue("Sheet1", "E33", fmt.Sprintf("$%.2f", invoice.SubTotal))
-	f.SetCellValue("Sheet1", "D34", "Payoneer Fee (3.1%)")
-	f.SetCellValue("Sheet1", "E34", fmt.Sprintf("$%.2f", invoice.PayoneerFee))
-	f.SetCellValue("Sheet1", "D35", "Grand Total")
-	f.SetCellValue("Sheet1", "E35", fmt.Sprintf("$%.2f", invoice.GrandTotal))
+	f.SetCellValue("Sheet1", "D38", "Subtotal")
+	f.SetCellValue("Sheet1", "E38", fmt.Sprintf("$%.2f", invoice.SubTotal))
+	f.SetCellValue("Sheet1", "D39", "Payoneer Fee (3.1%)")
+	f.SetCellValue("Sheet1", "E39", fmt.Sprintf("$%.2f", invoice.PayoneerFee))
+	f.SetCellValue("Sheet1", "D40", "Grand Total")
+	f.SetCellValue("Sheet1", "E40", fmt.Sprintf("$%.2f", invoice.GrandTotal))
 
 	// Save spreadsheet by the given path.
 	os.Mkdir("out", 0755)

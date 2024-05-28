@@ -11,7 +11,7 @@ This is a simple tool to get the time entries from Clockify, do a USD to PHP con
 ```bash
 export CLOCKIFY_API_KEY="foo...bar"
 export HOURLY_RATE_USD="10"
-./clockify-export-arm64-0.3.0
+./clockify-export-arm64-0.4.0
 ```
 
 If you're not using Apple Silicon, please run the `clockify-export-amd64-*` executable instead.
@@ -19,7 +19,7 @@ If you're not using Apple Silicon, please run the `clockify-export-amd64-*` exec
 # Sample Output
 
 ```bash
-❯ ./clockify-export-arm64-0.3.0
+❯ ./clockify-export-arm64-0.4.0
 Work Log:
 ID     DATE           HOURS                EARNINGS
 1      2024-05-01     08:00:00 (8.00)      $80.00

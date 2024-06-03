@@ -64,20 +64,6 @@ func init() {
 		fmt.Println("HOURLY_RATE_USD is not set")
 		os.Exit(1)
 	}
-
-	// Set the date range to the current month.
-	now := time.Now()
-	currentYear, currentMonth, _ := now.Date()
-	currentLocation := now.Location()
-	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
-	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
-	lastOfMonth = lastOfMonth.Add(time.Hour * 23)
-	lastOfMonth = lastOfMonth.Add(time.Minute * 59)
-	lastOfMonth = lastOfMonth.Add(time.Second * 59)
-	lastOfMonth = lastOfMonth.Add(time.Millisecond * 999)
-	layout := "2006-01-02T15:04:05.999Z"
-	payload.DateRangeStart = firstOfMonth.Format(layout)
-	payload.DateRangeEnd = lastOfMonth.Format(layout)
 }
 
 // callSummaryReportAPI calls the summary report API of Clockify.
@@ -154,7 +140,9 @@ func convertTimetoHHMMSS(seconds int) string {
 }
 
 // ClockifyGetWorkHoursGroupByDate fetches the work hours of the user grouped by date.
-func ClockifyGetWorkHoursGroupByDate(userId, workspaceId string) {
+func ClockifyGetWorkHoursGroupByDate(userId, workspaceId, start, end string) {
+	payload.DateRangeStart = start
+	payload.DateRangeEnd = end
 	payload.SummaryFilter.Groups[0] = "DATE"
 	payload.Users.Ids[0] = userId
 	payloadBuffer := new(bytes.Buffer)

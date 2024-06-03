@@ -4,6 +4,8 @@ This is a simple tool to get the time entries from Clockify, do a USD to PHP con
 
 # Usage
 
+If you're not using Apple Silicon, please run the `clockify-export-amd64-*` executable instead.
+
 1. Download the binary from the release page.
 1. Set the environment variables `CLOCKIFY_API_KEY` and `HOURLY_RATE_USD`.
 1. Execute the binary.
@@ -11,15 +13,25 @@ This is a simple tool to get the time entries from Clockify, do a USD to PHP con
 ```bash
 export CLOCKIFY_API_KEY="foo...bar"
 export HOURLY_RATE_USD="10"
-./clockify-export-arm64-0.4.0
+./clockify-export-arm64-0.4.1
 ```
 
-If you're not using Apple Silicon, please run the `clockify-export-amd64-*` executable instead.
+## Without `-customRange` flag (defaults to current month)
+
+```bash
+❯ ./clockify-export-arm64-0.4.1
+```
+
+## With `-customRange` flag
+
+```bash
+❯ ./clockify-export-arm64-0.4.1 -customRange "2024-05-01T00:00:00.000Z to 2024-05-31T23:59:59.999Z"
+```
 
 # Sample Output
 
 ```bash
-❯ ./clockify-export-arm64-0.4.0
+❯ ./clockify-export-arm64-0.4.1
 Work Log:
 ID     DATE           HOURS                EARNINGS
 1      2024-05-01     08:00:00 (8.00)      $80.00

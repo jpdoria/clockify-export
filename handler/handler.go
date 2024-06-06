@@ -155,6 +155,11 @@ func ClockifyGetWorkHoursGroupByDate(userId, workspaceId, start, end string) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
 	day := 0
 
+	if len(outputSummary.GroupOne) == 0 {
+		fmt.Println("No work hours found.")
+		os.Exit(1)
+	}
+
 	fmt.Println("Work Log:")
 	fmt.Fprintln(w, "ID\tDATE\tHOURS\tEARNINGS")
 	for _, groupOne := range outputSummary.GroupOne {

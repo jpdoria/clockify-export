@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 var (
 	start, end  = getCurrentDateRange()
 	customRange = flag.String("customRange", fmt.Sprintf("%v to %v", start, end), "Custom range using this format: \"1970-01-01T00:00:00.000Z to 1970-01-31T23:59:59.999Z\"")
+	version     = flag.Bool("version", false, "Print the current version.")
+	ver, build  string
 )
 
 // This function checks if a flag is passed.
@@ -47,6 +50,11 @@ func main() {
 	if isFlagPassed("customRange") {
 		start = strings.Split(*customRange, " to ")[0]
 		end = strings.Split(*customRange, " to ")[1]
+	}
+
+	if *version {
+		fmt.Printf("Version: %v.%v\n", ver, build)
+		os.Exit(0)
 	}
 
 	userId, workspaceId := handler.ClockifyGetWorkspace()

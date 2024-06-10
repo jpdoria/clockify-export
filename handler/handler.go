@@ -15,8 +15,8 @@ import (
 	"github.com/jpdoria/clockify-export/model"
 )
 
-// Constants for the API URLs.
-const (
+// Variables for the Clockify API and FX Rates URLs.
+var (
 	clockifyApiUrl        = "https://api.clockify.me/api"
 	clockifyReportsApiUrl = "https://reports.api.clockify.me"
 	fxRatesApiUrl         = "https://api.fxratesapi.com/latest"
@@ -156,7 +156,8 @@ func ClockifyGetWorkHoursGroupByDate(userId, workspaceId, start, end string) {
 	day := 0
 
 	if len(outputSummary.GroupOne) == 0 {
-		fmt.Println("No work hours found.")
+		fmt.Println("No data found. You might want to try the -customRange flag.")
+		fmt.Println("Here's an example: ./clockify-export -customRange=\"2021-01-01T00:00:00.000Z to 2021-01-31T23:59:59.999Z\"")
 		os.Exit(1)
 	}
 

@@ -58,5 +58,5 @@ func CreateSpreadsheet(invoice *model.Invoice) {
 	if err := f.SaveAs(invoiceFileName); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("Successfully created an invoice: out/invoice-%s.xlsx", invoice.Date)
+	fmt.Printf("Successfully created an invoice: out/invoice-%s.xlsx\n", invoice.Date)
 }

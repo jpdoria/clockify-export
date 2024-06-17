@@ -17,14 +17,14 @@ func init() {
 
 // Helper function to set up environment variables for testing.
 func setUpEnv() {
-	os.Setenv("CLOCKIFY_API_KEY", "Str0ng3stKey3v3r")
-	os.Setenv("HOURLY_RATE_USD", "10.0")
+	_ = os.Setenv("CLOCKIFY_API_KEY", "Str0ng3stKey3v3r")
+	_ = os.Setenv("HOURLY_RATE_USD", "10.0")
 }
 
 // Helper function to tear down environment variables after testing.
 func tearDownEnv() {
-	os.Unsetenv("CLOCKIFY_API_KEY")
-	os.Unsetenv("HOURLY_RATE_USD")
+	_ = os.Unsetenv("CLOCKIFY_API_KEY")
+	_ = os.Unsetenv("HOURLY_RATE_USD")
 }
 
 func TestCallSummaryReportAPI(t *testing.T) {
@@ -41,7 +41,7 @@ func TestCallSummaryReportAPI(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		_, _ = w.Write([]byte(`{
 	"totals": [
 		{
 			"totalTime": 28800,
@@ -94,7 +94,7 @@ func TestCallSummaryReportAPI(t *testing.T) {
 
 	// Create a payload buffer
 	payloadBuffer := new(bytes.Buffer)
-	json.NewEncoder(payloadBuffer).Encode(payload)
+	_ = json.NewEncoder(payloadBuffer).Encode(payload)
 
 	// Call the function
 	response := callSummaryReportAPI("workspace-id", payloadBuffer)
@@ -161,7 +161,7 @@ func TestGetExchangeRates(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		_, _ = w.Write([]byte(`{
 			"rates": {
 				"PHP": 50.0
 			}
@@ -196,7 +196,7 @@ func TestClockifyGetWorkspace(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		_, _ = w.Write([]byte(`{
 			"id": "user-id",
 			"defaultWorkspace": "workspace-id"
 		}`))
@@ -231,7 +231,7 @@ func TestClockifyGetWorkHoursGroupByDate(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		_, _ = w.Write([]byte(`{
 			"totals": [{
 				"totalTime": 1032750,
 				"totalBillableTime": 0,
@@ -283,10 +283,10 @@ func TestClockifyGetWorkHoursGroupByDate(t *testing.T) {
 	ClockifyGetWorkHoursGroupByDate("user-id", "workspace-id", "2024-05-01T00:00:00.000Z", "2024-05-31T23:59:59.999Z")
 
 	// Capture the output
-	w.Close()
+	_ = w.Close()
 	os.Stdout = oldStdout
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
+	_, _ = io.Copy(&buf, r)
 
 	// Verify the output
 	expectedOutput := "Work Log:\nID     DATE           HOURS               EARNINGS\n1      2024-05-01     08:00:00 (8.00)     $80.00\n"
@@ -309,7 +309,7 @@ func TestClockifyGetWorkHoursGroupByProject(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		_, _ = w.Write([]byte(`{
 			"totals": [{
 				"totalTime": 28800,
 				"totalBillableTime": 0,

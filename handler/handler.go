@@ -92,7 +92,7 @@ func callSummaryReportAPI(workspaceId string, payloadBuffer *bytes.Buffer) []byt
 	return r
 }
 
-// getExchangeRates fetches the latest exchange rates from the fxRatesApiUrl.
+// GetExchangeRates fetches the latest exchange rates from the fxRatesApiUrl.
 func GetExchangeRates(usdCurrency float64) (phpCurrency float64) {
 	resp, err := http.Get(fxRatesApiUrl)
 	if err != nil {
@@ -107,7 +107,7 @@ func GetExchangeRates(usdCurrency float64) (phpCurrency float64) {
 	}
 
 	var fxRates model.FxRates
-	json.Unmarshal(r, &fxRates)
+	_ = json.Unmarshal(r, &fxRates)
 	fmt.Printf("\nExchange rate right now for 1 USD to PHP: %.2f\n", fxRates.Rates.PHP)
 	return usdCurrency * fxRates.Rates.PHP
 }
@@ -125,7 +125,7 @@ func CalculateEarnings(hours float64) float64 {
 	return hours * hr
 }
 
-// func convertTimetoHHMMSS output to decimal format.
+// func convertTimeToDecimal output to decimal format.
 func convertTimeToDecimal(seconds int) float64 {
 	return float64(seconds) / 3600
 }
@@ -146,11 +146,11 @@ func ClockifyGetWorkHoursGroupByDate(userId, workspaceId, start, end string) {
 	payload.SummaryFilter.Groups[0] = "DATE"
 	payload.Users.Ids[0] = userId
 	payloadBuffer := new(bytes.Buffer)
-	json.NewEncoder(payloadBuffer).Encode(payload)
+	_ = json.NewEncoder(payloadBuffer).Encode(payload)
 	res := callSummaryReportAPI(workspaceId, payloadBuffer)
 
 	var outputSummary model.OutputSummary
-	json.Unmarshal(res, &outputSummary)
+	_ = json.Unmarshal(res, &outputSummary)
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
 	day := 0
@@ -162,11 +162,11 @@ func ClockifyGetWorkHoursGroupByDate(userId, workspaceId, start, end string) {
 	}
 
 	fmt.Println("Work Log:")
-	fmt.Fprintln(w, "ID\tDATE\tHOURS\tEARNINGS")
+	_, _ = fmt.Fprintln(w, "ID\tDATE\tHOURS\tEARNINGS")
 	for _, groupOne := range outputSummary.GroupOne {
 		day += 1
 		msg := fmt.Sprintf("%v\t%v\t%v (%.2f)\t$%.2f", day, groupOne.Name, convertTimetoHHMMSS(groupOne.Duration), convertTimeToDecimal(groupOne.Duration), CalculateEarnings(convertTimeToDecimal(groupOne.Duration)))
-		fmt.Fprintln(w, msg)
+		_, _ = fmt.Fprintln(w, msg)
 		invoice.WorkLog = append(invoice.WorkLog, model.WorkLog{
 			Id:          day,
 			Date:        groupOne.Name,
@@ -175,7 +175,7 @@ func ClockifyGetWorkHoursGroupByDate(userId, workspaceId, start, end string) {
 			Amount:      fmt.Sprintf("$%.2f", CalculateEarnings(convertTimeToDecimal(groupOne.Duration))),
 		})
 	}
-	w.Flush()
+	_ = w.Flush()
 }
 
 // ClockifyGetWorkHoursGroupByProject fetches the work hours of the user grouped by project.
@@ -183,11 +183,11 @@ func ClockifyGetWorkHoursGroupByProject(userId, workspaceId string) *model.Invoi
 	payload.SummaryFilter.Groups[0] = "PROJECT"
 	payload.Users.Ids[0] = userId
 	payloadBuffer := new(bytes.Buffer)
-	json.NewEncoder(payloadBuffer).Encode(payload)
+	_ = json.NewEncoder(payloadBuffer).Encode(payload)
 	res := callSummaryReportAPI(workspaceId, payloadBuffer)
 
 	var outputSummary model.OutputSummary
-	json.Unmarshal(res, &outputSummary)
+	_ = json.Unmarshal(res, &outputSummary)
 
 	fmt.Printf("Total Hours: %v (%.2f)\n", convertTimetoHHMMSS(outputSummary.Total[0].TotalTime), convertTimeToDecimal(outputSummary.Total[0].TotalTime))
 	invoice.SubTotal = CalculateEarnings(convertTimeToDecimal(outputSummary.Total[0].TotalTime))
@@ -197,7 +197,7 @@ func ClockifyGetWorkHoursGroupByProject(userId, workspaceId string) *model.Invoi
 	return invoice
 }
 
-// clockifyGetWorkspace fetches the default workspace and user id of the user.
+// ClockifyGetWorkspace fetches the default workspace and user id of the user.
 func ClockifyGetWorkspace() (string, string) {
 	req, err := http.NewRequest("GET", clockifyApiUrl+"/v1/user", nil)
 	if err != nil {
@@ -218,6 +218,6 @@ func ClockifyGetWorkspace() (string, string) {
 	if err != nil {
 		fmt.Printf("Error reading response body: %v", err)
 	}
-	json.Unmarshal(r, &user)
+	_ = json.Unmarshal(r, &user)
 	return user.Id, user.DefaultWorkspace
 }

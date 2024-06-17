@@ -45,7 +45,7 @@ type OutputSummary struct {
 	GroupOne []GroupOne `json:"groupOne"`
 }
 
-// Totals struct for the OutputSummary struct which holds the total work hours.
+// Total struct for the OutputSummary struct which holds the total work hours.
 type Total struct {
 	TotalTime int `json:"totalTime"`
 }

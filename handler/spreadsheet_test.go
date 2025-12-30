@@ -62,12 +62,16 @@ func TestCreateSpreadsheet(t *testing.T) {
 	assertCellValue(t, "Sheet1", "E1", invoice.Date)
 	assertCellValue(t, "Sheet1", "E2", invoice.Id)
 	assertCellValue(t, "Sheet1", "E11", fmt.Sprintf("$%.2f", invoice.HourlyRate))
-	assertCellValue(t, "Sheet1", "D38", "Subtotal")
-	assertCellValue(t, "Sheet1", "E38", fmt.Sprintf("$%.2f", invoice.SubTotal))
-	assertCellValue(t, "Sheet1", "D39", "Payoneer Fee (3.1%)")
-	assertCellValue(t, "Sheet1", "E39", fmt.Sprintf("$%.2f", invoice.PayoneerFee))
-	assertCellValue(t, "Sheet1", "D40", "Grand Total")
-	assertCellValue(t, "Sheet1", "E40", fmt.Sprintf("$%.2f", invoice.GrandTotal))
+
+	// Summary rows are dynamically positioned based on work log length
+	// headerRow (13) + len(WorkLog) + 2 = 13 + 1 + 2 = 16
+	summaryStartRow := 13 + len(invoice.WorkLog) + 2
+	assertCellValue(t, "Sheet1", fmt.Sprintf("D%d", summaryStartRow), "Subtotal")
+	assertCellValue(t, "Sheet1", fmt.Sprintf("E%d", summaryStartRow), fmt.Sprintf("$%.2f", invoice.SubTotal))
+	assertCellValue(t, "Sheet1", fmt.Sprintf("D%d", summaryStartRow+1), "Payoneer Fee (3.1%)")
+	assertCellValue(t, "Sheet1", fmt.Sprintf("E%d", summaryStartRow+1), fmt.Sprintf("$%.2f", invoice.PayoneerFee))
+	assertCellValue(t, "Sheet1", fmt.Sprintf("D%d", summaryStartRow+2), "Grand Total")
+	assertCellValue(t, "Sheet1", fmt.Sprintf("E%d", summaryStartRow+2), fmt.Sprintf("$%.2f", invoice.GrandTotal))
 
 	// Verify the work log entry
 	assertCellValue(t, "Sheet1", "A14", strconv.Itoa(invoice.WorkLog[0].Id))

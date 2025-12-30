@@ -30,13 +30,13 @@ func CreateSpreadsheet(invoice *model.Invoice) {
 	f.SetCellValue("Sheet1", "E11", fmt.Sprintf("$%.2f", invoice.HourlyRate))
 
 	// Add the column headers.
-	for _, columnHeaders := range [][]interface{}{{"ID", "Description", "Date", "Hours", "Amount"}} {
-		f.SetSheetRow("Sheet1", "A13", &columnHeaders)
-	}
+	columnHeaders := []interface{}{"ID", "Description", "Date", "Hours", "Amount"}
+	f.SetSheetRow("Sheet1", "A13", &columnHeaders)
 
 	// Add the work log entries just below the column headers.
+	const headerRow = 13
 	for idx, entry := range invoice.WorkLog {
-		cell, err := excelize.CoordinatesToCellName(1, idx+14)
+		cell, err := excelize.CoordinatesToCellName(1, headerRow+idx+1)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -44,19 +44,24 @@ func CreateSpreadsheet(invoice *model.Invoice) {
 		f.SetSheetRow("Sheet1", cell, &[]interface{}{entry.Id, entry.Description, entry.Date, entry.Hours, entry.Amount})
 	}
 
-	// Add the subtotal, Payoneer fee, and grand total at the bottom.
-	f.SetCellValue("Sheet1", "D38", "Subtotal")
-	f.SetCellValue("Sheet1", "E38", fmt.Sprintf("$%.2f", invoice.SubTotal))
-	f.SetCellValue("Sheet1", "D39", "Payoneer Fee (3.1%)")
-	f.SetCellValue("Sheet1", "E39", fmt.Sprintf("$%.2f", invoice.PayoneerFee))
-	f.SetCellValue("Sheet1", "D40", "Grand Total")
-	f.SetCellValue("Sheet1", "E40", fmt.Sprintf("$%.2f", invoice.GrandTotal))
+	// Add the subtotal, Payoneer fee, and grand total dynamically after work log entries.
+	summaryStartRow := headerRow + len(invoice.WorkLog) + 2
+	f.SetCellValue("Sheet1", fmt.Sprintf("D%d", summaryStartRow), "Subtotal")
+	f.SetCellValue("Sheet1", fmt.Sprintf("E%d", summaryStartRow), fmt.Sprintf("$%.2f", invoice.SubTotal))
+	f.SetCellValue("Sheet1", fmt.Sprintf("D%d", summaryStartRow+1), fmt.Sprintf("Payoneer Fee (%.1f%%)", payoneerFeeRate*100))
+	f.SetCellValue("Sheet1", fmt.Sprintf("E%d", summaryStartRow+1), fmt.Sprintf("$%.2f", invoice.PayoneerFee))
+	f.SetCellValue("Sheet1", fmt.Sprintf("D%d", summaryStartRow+2), "Grand Total")
+	f.SetCellValue("Sheet1", fmt.Sprintf("E%d", summaryStartRow+2), fmt.Sprintf("$%.2f", invoice.GrandTotal))
 
 	// Save spreadsheet by the given path.
-	os.Mkdir("out", 0755)
+	if err := os.MkdirAll("out", 0755); err != nil {
+		fmt.Printf("Error creating output directory: %v\n", err)
+		return
+	}
 	invoiceFileName := fmt.Sprintf("out/invoice-%s.xlsx", invoice.Date)
 	if err := f.SaveAs(invoiceFileName); err != nil {
-		fmt.Println(err)
+		fmt.Printf("Error saving invoice: %v\n", err)
+		return
 	}
-	fmt.Printf("Successfully created an invoice: out/invoice-%s.xlsx\n", invoice.Date)
+	fmt.Printf("Successfully created an invoice: %s\n", invoiceFileName)
 }

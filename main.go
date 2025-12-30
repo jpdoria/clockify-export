@@ -28,19 +28,17 @@ func isFlagPassed(name string) bool {
 	return found
 }
 
-// Function that gets the current date range.
+// getCurrentDateRange returns the first and last moment of the current month in ISO format.
 func getCurrentDateRange() (string, string) {
 	now := time.Now()
 	currentYear, currentMonth, _ := now.Date()
 	currentLocation := now.Location()
-	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
-	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
-	lastOfMonth = lastOfMonth.Add(time.Hour * 23)
-	lastOfMonth = lastOfMonth.Add(time.Minute * 59)
-	lastOfMonth = lastOfMonth.Add(time.Second * 59)
-	lastOfMonth = lastOfMonth.Add(time.Millisecond * 999)
-	layout := "2006-01-02T15:04:05.999Z"
 
+	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
+	// Get the last day of month at 23:59:59.999
+	lastOfMonth := firstOfMonth.AddDate(0, 1, 0).Add(-time.Millisecond)
+
+	const layout = "2006-01-02T15:04:05.999Z"
 	return firstOfMonth.Format(layout), lastOfMonth.Format(layout)
 }
 

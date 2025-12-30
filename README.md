@@ -13,25 +13,25 @@ If you're not using Apple Silicon, please run the `clockify-export-amd64-*` exec
 ```bash
 export CLOCKIFY_API_KEY="foo...bar"
 export HOURLY_RATE_USD="10"
-./clockify-export-arm64-0.4.4
+./clockify-export-arm64-0.4.5
 ```
 
 ## Without `-customRange` flag (defaults to current month)
 
 ```bash
-❯ ./clockify-export-arm64-0.4.4
+❯ ./clockify-export-arm64-0.4.5
 ```
 
 ## With `-customRange` flag
 
 ```bash
-❯ ./clockify-export-arm64-0.4.4 -customRange "2024-05-01T00:00:00.000Z to 2024-05-31T23:59:59.999Z"
+❯ ./clockify-export-arm64-0.4.5 -customRange "2024-05-01T00:00:00.000Z to 2024-05-31T23:59:59.999Z"
 ```
 
 # Sample Output
 
 ```bash
-❯ ./clockify-export-arm64-0.4.4
+❯ ./clockify-export-arm64-0.4.5
 Work Log:
 ID     DATE           HOURS                EARNINGS
 1      2024-05-01     08:00:00 (8.00)      $80.00

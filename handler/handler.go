@@ -15,11 +15,21 @@ import (
 	"github.com/jpdoria/clockify-export/model"
 )
 
-// Variables for the Clockify API and FX Rates URLs.
+// Constants for the application.
+const (
+	payoneerFeeRate    = 0.031 // 3.1% Payoneer fee
+	secondsPerHour     = 3600
+	defaultDescription = "Independent Contractor Services"
+	clockifyAPIURL     = "https://api.clockify.me/api"
+	clockifyReportsURL = "https://reports.api.clockify.me"
+	fxRatesAPIURL      = "https://api.fxratesapi.com/latest"
+)
+
+// Variables for testing - these can be overridden in tests.
 var (
-	clockifyApiUrl        = "https://api.clockify.me/api"
-	clockifyReportsApiUrl = "https://reports.api.clockify.me"
-	fxRatesApiUrl         = "https://api.fxratesapi.com/latest"
+	clockifyApiUrl        = clockifyAPIURL
+	clockifyReportsApiUrl = clockifyReportsURL
+	fxRatesApiUrl         = fxRatesAPIURL
 )
 
 // Variables for the http client, clockify API key, hourly rate in USD, and the payload for the summary report.
@@ -84,9 +94,15 @@ func callSummaryReportAPI(workspaceId string, payloadBuffer *bytes.Buffer) []byt
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		fmt.Printf("Clockify API error: status code %d\n", res.StatusCode)
+		os.Exit(1)
+	}
+
 	r, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Printf("Error reading response body: %v", err)
+		fmt.Printf("Error reading response body: %v\n", err)
+		os.Exit(1)
 	}
 
 	return r
@@ -101,13 +117,22 @@ func GetExchangeRates(usdCurrency float64) (phpCurrency float64) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("FX Rates API error: status code %d\n", resp.StatusCode)
+		os.Exit(1)
+	}
+
 	r, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("Error reading response body: %v", err)
+		fmt.Printf("Error reading response body: %v\n", err)
+		os.Exit(1)
 	}
 
 	var fxRates model.FxRates
-	_ = json.Unmarshal(r, &fxRates)
+	if err := json.Unmarshal(r, &fxRates); err != nil {
+		fmt.Printf("Error parsing exchange rates: %v\n", err)
+		os.Exit(1)
+	}
 	fmt.Printf("\nExchange rate right now for 1 USD to PHP: %.2f\n", fxRates.Rates.PHP)
 	return usdCurrency * fxRates.Rates.PHP
 }
@@ -125,15 +150,15 @@ func CalculateEarnings(hours float64) float64 {
 	return hours * hr
 }
 
-// func convertTimeToDecimal output to decimal format.
+// convertTimeToDecimal converts seconds to decimal hours.
 func convertTimeToDecimal(seconds int) float64 {
-	return float64(seconds) / 3600
+	return float64(seconds) / secondsPerHour
 }
 
-// convertTimetoHHMMSS converts the seconds to HH:MM:SS format.
-func convertTimetoHHMMSS(seconds int) string {
-	hours := seconds / 3600
-	seconds %= 3600
+// convertTimeToHHMMSS converts seconds to HH:MM:SS format.
+func convertTimeToHHMMSS(seconds int) string {
+	hours := seconds / secondsPerHour
+	seconds %= secondsPerHour
 	minutes := seconds / 60
 	seconds %= 60
 	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
@@ -146,11 +171,17 @@ func ClockifyGetWorkHoursGroupByDate(userId, workspaceId, start, end string) {
 	payload.SummaryFilter.Groups[0] = "DATE"
 	payload.Users.Ids[0] = userId
 	payloadBuffer := new(bytes.Buffer)
-	_ = json.NewEncoder(payloadBuffer).Encode(payload)
+	if err := json.NewEncoder(payloadBuffer).Encode(payload); err != nil {
+		fmt.Printf("Error encoding payload: %v\n", err)
+		os.Exit(1)
+	}
 	res := callSummaryReportAPI(workspaceId, payloadBuffer)
 
 	var outputSummary model.OutputSummary
-	_ = json.Unmarshal(res, &outputSummary)
+	if err := json.Unmarshal(res, &outputSummary); err != nil {
+		fmt.Printf("Error parsing work hours response: %v\n", err)
+		os.Exit(1)
+	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
 	day := 0
@@ -165,12 +196,12 @@ func ClockifyGetWorkHoursGroupByDate(userId, workspaceId, start, end string) {
 	_, _ = fmt.Fprintln(w, "ID\tDATE\tHOURS\tEARNINGS")
 	for _, groupOne := range outputSummary.GroupOne {
 		day += 1
-		msg := fmt.Sprintf("%v\t%v\t%v (%.2f)\t$%.2f", day, groupOne.Name, convertTimetoHHMMSS(groupOne.Duration), convertTimeToDecimal(groupOne.Duration), CalculateEarnings(convertTimeToDecimal(groupOne.Duration)))
+		msg := fmt.Sprintf("%v\t%v\t%v (%.2f)\t$%.2f", day, groupOne.Name, convertTimeToHHMMSS(groupOne.Duration), convertTimeToDecimal(groupOne.Duration), CalculateEarnings(convertTimeToDecimal(groupOne.Duration)))
 		_, _ = fmt.Fprintln(w, msg)
 		invoice.WorkLog = append(invoice.WorkLog, model.WorkLog{
 			Id:          day,
 			Date:        groupOne.Name,
-			Description: "Independent Contractor Services",
+			Description: defaultDescription,
 			Hours:       fmt.Sprintf("%.2f", convertTimeToDecimal(groupOne.Duration)),
 			Amount:      fmt.Sprintf("$%.2f", CalculateEarnings(convertTimeToDecimal(groupOne.Duration))),
 		})
@@ -183,15 +214,21 @@ func ClockifyGetWorkHoursGroupByProject(userId, workspaceId string) *model.Invoi
 	payload.SummaryFilter.Groups[0] = "PROJECT"
 	payload.Users.Ids[0] = userId
 	payloadBuffer := new(bytes.Buffer)
-	_ = json.NewEncoder(payloadBuffer).Encode(payload)
+	if err := json.NewEncoder(payloadBuffer).Encode(payload); err != nil {
+		fmt.Printf("Error encoding payload: %v\n", err)
+		os.Exit(1)
+	}
 	res := callSummaryReportAPI(workspaceId, payloadBuffer)
 
 	var outputSummary model.OutputSummary
-	_ = json.Unmarshal(res, &outputSummary)
+	if err := json.Unmarshal(res, &outputSummary); err != nil {
+		fmt.Printf("Error parsing project hours response: %v\n", err)
+		os.Exit(1)
+	}
 
-	fmt.Printf("Total Hours: %v (%.2f)\n", convertTimetoHHMMSS(outputSummary.Total[0].TotalTime), convertTimeToDecimal(outputSummary.Total[0].TotalTime))
+	fmt.Printf("Total Hours: %v (%.2f)\n", convertTimeToHHMMSS(outputSummary.Total[0].TotalTime), convertTimeToDecimal(outputSummary.Total[0].TotalTime))
 	invoice.SubTotal = CalculateEarnings(convertTimeToDecimal(outputSummary.Total[0].TotalTime))
-	invoice.PayoneerFee = invoice.SubTotal * 0.031
+	invoice.PayoneerFee = invoice.SubTotal * payoneerFeeRate
 	invoice.GrandTotal = invoice.SubTotal + invoice.PayoneerFee
 
 	return invoice
@@ -213,11 +250,20 @@ func ClockifyGetWorkspace() (string, string) {
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		fmt.Printf("Clockify API error: status code %d\n", res.StatusCode)
+		os.Exit(1)
+	}
+
 	var user model.User
 	r, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Printf("Error reading response body: %v", err)
+		fmt.Printf("Error reading response body: %v\n", err)
+		os.Exit(1)
 	}
-	_ = json.Unmarshal(r, &user)
+	if err := json.Unmarshal(r, &user); err != nil {
+		fmt.Printf("Error parsing user response: %v\n", err)
+		os.Exit(1)
+	}
 	return user.Id, user.DefaultWorkspace
 }
